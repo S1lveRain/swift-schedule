@@ -6,11 +6,20 @@ struct SubjectCardView: View {
     var subjectName: String
     var roomNumber: String
     var lectureType: String
+    var startTime: String
+    var endTime: String
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(subjectName)
-                .font(.headline)
+            HStack {
+                Text(subjectName)
+                    .font(.headline)
+                    .fontWeight(.medium)
+                Spacer()
+                Text("\(startTime) - \(endTime)")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            }
             
             HStack {
                 Text("Преподаватель:")
@@ -45,6 +54,13 @@ struct SubjectCardView: View {
 
 struct SubjectCardView_Previews: PreviewProvider {
     static var previews: some View {
-        SubjectCardView(teacherName: "Алексей Иванов", subjectName: "Математический анализ", roomNumber: "Кабинет 404", lectureType: "Лекция")
+        SubjectCardView(
+            teacherName: "Алексей Иванов",
+            subjectName: "Математический анализ",
+            roomNumber: "Кабинет 404",
+            lectureType: "Лекция",
+            startTime: "09:00",
+            endTime: "10:30"
+        )
     }
 }
