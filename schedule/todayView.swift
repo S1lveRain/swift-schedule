@@ -166,7 +166,7 @@ struct TodayView: View {
 
     // Сегодняшний день недели
     
-    let dayOfWeek = Calendar.current.component(.weekday, from: Date()) - 2
+    let dayOfWeek = Calendar.current.component(.weekday, from: Date()) - 1
 
     func getWeekData(for lesson: LessonGroup) -> WeekData? {
         if viewModel.currentWeek == "1" {
@@ -182,22 +182,31 @@ struct TodayView: View {
             Text(currentDate)
                 .font(.title)
                 .padding()
+            Text(viewModel.currentWeek == "1" ? "Верхняя неделя" : "Нижняя неделя")
             
             ScrollView {
                 VStack {
                     if let todaySchedule = viewModel.schedule?.first(where: { $0.dayOfWeek == "\(dayOfWeek)" }) {
-                        ForEach(todaySchedule.lessons, id: \.id) { lesson in
-                            if let weekData = getWeekData(for: lesson),
-                               case .lessonDataGroup(let lessonDataGroup) = weekData {
-                                SubjectCardView(
-                                    teacherName: lessonDataGroup.teacher.name,
-                                    subjectName: lessonDataGroup.subject.title,
-                                    roomNumber: "Кабинет \(lessonDataGroup.cabinet)",
-                                    lectureType: lessonDataGroup.subject.type ?? "Не указано",
-                                    startTime: lesson.time.from,
-                                    endTime: lesson.time.to
-                                )
-                                .padding(.bottom, 8)
+                        if todaySchedule.lessons.isEmpty || todaySchedule.isWeekend == true {
+                            Image("Weekend")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 200, height: 200)
+                                .padding()
+                        } else {
+                            ForEach(todaySchedule.lessons, id: \.id) { lesson in
+                                if let weekData = getWeekData(for: lesson),
+                                   case .lessonDataGroup(let lessonDataGroup) = weekData {
+                                    SubjectCardView(
+                                        teacherName: lessonDataGroup.teacher.name,
+                                        subjectName: lessonDataGroup.subject.title,
+                                        roomNumber: "Кабинет \(lessonDataGroup.cabinet)",
+                                        lectureType: lessonDataGroup.subject.type ?? "Не указано",
+                                        startTime: lesson.time.from,
+                                        endTime: lesson.time.to
+                                    )
+                                    .padding(.bottom, 8)
+                                }
                             }
                         }
                     }
@@ -208,6 +217,7 @@ struct TodayView: View {
                     }
                 }
                 .padding()
+
             }
         }
         .onAppear {
