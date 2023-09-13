@@ -8,6 +8,13 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    init() {
+        UITabBar.appearance().backgroundColor = UIColor.white
+        UITabBar.appearance().barTintColor = UIColor.white
+        UITabBar.appearance().unselectedItemTintColor = UIColor.black
+    }
+    
     var body: some View {
         TabView {
             TodayView()
