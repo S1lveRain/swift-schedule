@@ -9,13 +9,82 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        TabView {
+            TodayView()
+                .tabItem {
+                    Label("Сегодня", systemImage: "house.fill")
+                }
+            
+            ScheduleView()
+                .tabItem {
+                    Label("Расписание", systemImage: "calendar")
+                }
+            
+            TeachersView()
+                .tabItem {
+                    Label("Преподаватели", systemImage: "person.2.fill")
+                }
+            
+            SettingsView()
+                .tabItem {
+                    Label("Настройки", systemImage: "gear")
+                }
         }
-        .padding()
+    }
+}
+
+struct TodayView: View {
+    let currentDate: String = {
+            let date = Date()
+            let formatter = DateFormatter()
+            formatter.dateStyle = .long
+            return formatter.string(from: date)
+        }()
+        
+        var body: some View {
+            VStack {
+                Text(currentDate)
+                    .font(.title)
+                    .padding()
+                
+                ScrollView {
+                    VStack {
+                        SubjectCardView(teacherName: "Алексей Иванов", subjectName: "Математический анализ", roomNumber: "Кабинет 404", lectureType: "Лекция")
+                        SubjectCardView(teacherName: "Марина Петрова", subjectName: "Линейная алгебра", roomNumber: "Кабинет 301", lectureType: "Семинар")
+                        SubjectCardView(teacherName: "Иван Сидоров", subjectName: "Физика", roomNumber: "Кабинет 202", lectureType: "Лабораторная работа")
+                        SubjectCardView(teacherName: "Елена Волкова", subjectName: "Программирование", roomNumber: "Кабинет 103", lectureType: "Лекция")
+                    }
+                    .padding()
+                }
+            }
+        }
+    
+}
+
+struct ScheduleView: View {
+    var body: some View {
+        VStack {
+            Text("Расписание")
+                .padding()
+        }
+    }
+}
+
+struct TeachersView: View {
+    var body: some View {
+        VStack {
+            Text("Преподаватели")
+                .padding()
+        }
+    }
+}
+
+struct SettingsView: View {
+    var body: some View {
+        VStack {
+            Text("Настройки")
+                .padding()
+        }
     }
 }
 
