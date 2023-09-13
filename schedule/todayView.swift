@@ -2,6 +2,9 @@ import SwiftUI
 
 import Foundation
 
+
+// Структуры всех данных ( типы )
+
 struct Subject: Codable {
     let title: String
     let type: String?
@@ -77,9 +80,19 @@ struct ScheduleResponse: Codable {
     let result: ResultScheduleByGroup
 }
 
+struct WeekResponse: Codable {
+    struct Result: Codable {
+        let curWeek: String
+    }
+    let result: Result
+}
+
+
 typealias ResultScheduleByGroup = [DayGroup]
 
 
+
+// Тут мы получаем нужные данные
 
 class ScheduleViewModel: ObservableObject {
     @Published var schedule: ResultScheduleByGroup?
@@ -112,19 +125,57 @@ class ScheduleViewModel: ObservableObject {
 
         task.resume()
     }
+    
+    @Published var currentWeek: String?
+
+    func fetchCurrentWeek() {
+        guard let url = URL(string: "https://back-my-ati.anto-mshk.ru/data/week") else { return }
+
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else { return }
+
+            do {
+                let weekResponse = try JSONDecoder().decode(WeekResponse.self, from: data)
+                DispatchQueue.main.async {
+                    self.currentWeek = weekResponse.result.curWeek
+                }
+            } catch {
+                print("Failed to decode JSON: \(error)")
+            }
+        }
+
+        task.resume()
+    }
+
 }
 
-
+// Вывод
 
 struct TodayView: View {
     @StateObject private var viewModel = ScheduleViewModel()
     
+    // Сегодняшняя дата
+    
     let currentDate: String = {
         let date = Date()
         let formatter = DateFormatter()
-        formatter.dateStyle = .long
+        formatter.locale = Locale(identifier: "ru_RU")
+        formatter.dateFormat = "d MMMM, EEEE"
         return formatter.string(from: date)
     }()
+
+    // Сегодняшний день недели
+    
+    let dayOfWeek = Calendar.current.component(.weekday, from: Date()) - 2
+
+    func getWeekData(for lesson: LessonGroup) -> WeekData? {
+        if viewModel.currentWeek == "1" {
+            return lesson.data.topWeek ?? lesson.data.lowerWeek
+        } else {
+            return lesson.data.lowerWeek ?? lesson.data.topWeek
+        }
+    }
+    
     
     var body: some View {
         VStack {
@@ -134,31 +185,34 @@ struct TodayView: View {
             
             ScrollView {
                 VStack {
-                    if let todaySchedule = viewModel.schedule?.first(where: { $0.dayOfWeek == "2" }) {
+                    if let todaySchedule = viewModel.schedule?.first(where: { $0.dayOfWeek == "\(dayOfWeek)" }) {
                         ForEach(todaySchedule.lessons, id: \.id) { lesson in
-                            if case .lessonDataGroup(let lowerWeekData) = lesson.data.topWeek {
+                            if let weekData = getWeekData(for: lesson),
+                               case .lessonDataGroup(let lessonDataGroup) = weekData {
                                 SubjectCardView(
-                                    teacherName: lowerWeekData.teacher.name,
-                                    subjectName: lowerWeekData.subject.title,
-                                    roomNumber: "Кабинет \(lowerWeekData.cabinet)",
-                                    lectureType: lowerWeekData.subject.type ?? "Не указано",
+                                    teacherName: lessonDataGroup.teacher.name,
+                                    subjectName: lessonDataGroup.subject.title,
+                                    roomNumber: "Кабинет \(lessonDataGroup.cabinet)",
+                                    lectureType: lessonDataGroup.subject.type ?? "Не указано",
                                     startTime: lesson.time.from,
                                     endTime: lesson.time.to
                                 )
                                 .padding(.bottom, 8)
                             }
                         }
-                    } else {
+                    }
+                    else {
                         Text("Нет данных для отображения")
                             .foregroundColor(.gray)
+                            .padding(.bottom, 8)
                     }
-
                 }
                 .padding()
             }
         }
         .onAppear {
             viewModel.fetchSchedule()
+            viewModel.fetchCurrentWeek()
         }
     }
 }
