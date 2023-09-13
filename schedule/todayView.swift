@@ -166,7 +166,7 @@ struct TodayView: View {
 
     // Сегодняшний день недели
     
-    let dayOfWeek = Calendar.current.component(.weekday, from: Date()) - 1
+    let dayOfWeek = Calendar.current.component(.weekday, from: Date()) - 2
 
     func getWeekData(for lesson: LessonGroup) -> WeekData? {
         if viewModel.currentWeek == "1" {
